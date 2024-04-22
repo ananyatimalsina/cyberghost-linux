@@ -1,0 +1,12 @@
+.openvpn {
+    height: 40px;
+    width: 40px;
+}
+
+.outerRing {
+    fill: #ea7e20;
+}
+
+.innerKey {
+    fill: #036;
+}

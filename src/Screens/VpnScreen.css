@@ -1,0 +1,37 @@
+.PowerButton {
+    background-color: transparent;
+    border: none;
+    margin-bottom: 15px;
+}
+
+img {
+    height: 30px;
+    width: 30px;
+    border: 1px solid gray;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+}
+
+.ServerSelectBtn {
+    background-color: transparent;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid gray;
+    padding: 10px 32px;
+    font-size: 16px;
+    border-radius: 30px;
+    width: 250px;
+}
+
+.ServerSelectBtn:hover, .ServerSelectBtn:hover > img {
+    box-shadow: 0 0 5px lightgray;
+}
+
+.Select {
+    margin-top: 10px;
+    margin-right: 260px;
+    margin-bottom: -30px;
+}

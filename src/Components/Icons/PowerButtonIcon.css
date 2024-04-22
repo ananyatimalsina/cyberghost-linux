@@ -1,0 +1,32 @@
+.PBIcon {
+    width: 200px;
+    height: 200px;
+}
+
+.PBIconCircle {
+    stroke: #6a6c9e;
+}
+
+.PBIconCircle, .PBIconCircleAnimation {
+    fill: none;
+    stroke-width: 3;
+}
+
+.PBIconCircleAnimation {
+    stroke: #fc0;
+    filter: url(#glow);
+}
+
+.PBIcon:hover > .PBIconCircle {
+    filter: url(#glow);
+}
+
+.fullPBAnimation {
+    fill: #fc0;
+    fill-opacity: 10%;
+    filter: url(#glow);
+}
+
+.PBIconPower {
+    fill:#6a6c9e;
+}
