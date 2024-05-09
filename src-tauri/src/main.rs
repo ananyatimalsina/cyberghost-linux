@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::process::Output;
-
+use app_state::ServerType;
 use tokio::process::Command;
 
 mod auth;
@@ -25,6 +25,36 @@ async fn val_login() -> Result<bool, definitions::Error> {
     auth::validate_login().await?;
 
     Ok(true.into())
+}
+
+#[tauri::command]
+async fn get_servers(server_type: String) -> Result<String, definitions::Error> {
+    let output: Output = Command::new("cyberghostvpn")
+                    .arg(format!("--{}", server_type.to_lowercase()))
+                    .arg("--country-code")
+                    .output()
+                    .await?;
+
+    let output: String = String::from_utf8(output.stdout).unwrap();
+
+    let lines: Vec<&str> = output.split('\n').collect();
+
+    let mut result: Vec<String> = Vec::new();
+
+    for line in lines {
+        let columns: Vec<&str> = line.split('|').collect();
+        if columns.len() == 4 {
+            let country_name = columns[1].trim();
+            let country_code = columns[2].trim();
+            result.push(format!("{}: {}", country_name, country_code));
+        }
+    }
+
+    let result: String = result.join("\n");
+
+    print!("{}", result);
+
+    Ok(result)
 }
 
 #[tauri::command]

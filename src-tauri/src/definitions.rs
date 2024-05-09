@@ -15,3 +15,9 @@ impl serde::Serialize for Error {
         serializer.serialize_str(self.to_string().as_ref())
     }
 }
+
+impl Error {
+    pub(crate) fn new(msg: &str) -> Self {
+        Self::Io(std::io::Error::new(std::io::ErrorKind::Other, msg))
+    }
+}

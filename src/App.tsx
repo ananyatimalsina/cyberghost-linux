@@ -16,15 +16,16 @@ function App() {
     });
   }, []);
 
-  const performLogin = (username: string, password: string) => {
-    invoke('perf_login', { username: username, password: password }).then((response) => {
-        console.log(response);
-        setIsLoggedIn(true);
-        return true;
-    }).catch((error) => {
-        console.error(error);
-        return false;
-    });
+  const performLogin = async (username: string, password: string): Promise<[boolean, string]> => {
+    try {
+      const response = await invoke('perf_login', { username, password });
+      console.log(response);
+      setIsLoggedIn(true);
+      return [true, "success"];
+    } catch (error) {
+      console.error(error);
+      return [false, String(error)];
+    }
   };
 
   return (

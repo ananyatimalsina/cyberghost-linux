@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use dirs;
 extern crate ini;
 use ini::Ini;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 
 use crate::definitions;
@@ -28,7 +28,11 @@ async fn get_device(bearer: &str) -> Result<(String, String, String), definition
 
     let rj: Value = res.json().await?;
 
-    let name = rj["oauthConsumers"]["appName"].as_str().unwrap().to_string();
+    if rj.get("oauthConsumers").is_none() {
+        return Err(definitions::Error::new(rj["errorMessage"].as_str().unwrap()));
+    }
+
+    let name:String = rj["oauthConsumers"]["appName"].as_str().unwrap().to_string();
     let device_token: String = rj["token"].as_str().unwrap().to_string();
     let device_secret: String = rj["tokenSecret"].as_str().unwrap().to_string();
     
@@ -42,10 +46,10 @@ async fn login(username: &str, password: &str) -> Result<String, definitions::Er
     headers.insert("x-app-key", "QzgDsDNUXlgF9jehkTHHtBJwwI4RyInkZQDRJfLyz".parse().unwrap());
 
     let mut payload = HashMap::new();
-    payload.insert("username", username);
+    payload.insert("userName", username);
     payload.insert("password", password);
 
-    let res: Response = client.get("https://v2-api.cyberghostvpn.com/v2/my/account/jwt?language=en")
+    let res: Response = client.post("https://v2-api.cyberghostvpn.com/v2/my/account/jwt?language=en")
         .headers(headers)
         .json(&payload)
         .send()
@@ -53,7 +57,7 @@ async fn login(username: &str, password: &str) -> Result<String, definitions::Er
 
     let rj: Value = res.json().await?;
 
-    let token: String = rj["jwt"].as_str().unwrap().to_string();
+    let token: String = rj["jwt"].as_str().ok_or(definitions::Error::new("Invalid Username or Password"))?.to_string();
     
     Ok(token)
 }
@@ -85,9 +89,18 @@ pub(crate) async fn perform_login(username: String, password: String) -> Result<
             Some(home_str) => {
                 let path_str: String = format!("{}/.cyberghost/config.ini", home_str);
 
-                let mut config = Ini::load_from_file(path_str.clone()).unwrap();
+                OpenOptions::new()
+                    .read(true)
+                    .write(true)
+                    .create(true)
+                    .open(path_str.clone())
+                    .unwrap();
+
+                let mut config: Ini = Ini::load_from_file(path_str.clone()).unwrap();
 
                 let token_path_str: String = format!("{}/.cyberghost/token", home_str);
+
+                let openvpn_path_str: String = format!("{}/.cyberghost/openvpn/", home_str);
 
                 let token: String = login(&username, &password).await?;
 
@@ -99,13 +112,17 @@ pub(crate) async fn perform_login(username: String, password: String) -> Result<
 
                 config.with_section(Some("device"))
                     .set("name", name)
-                    .set("token", device_token)
-                    .set("secret", device_secret);
+                    .set("token", device_token.clone())
+                    .set("secret", device_secret.clone());
 
                 config.write_to_file(path_str).unwrap();
 
                 let mut token_file: File = File::create(token_path_str).expect("Unable to create the token file");
                 token_file.write_all(token.as_bytes()).expect("Unable to write to the token file");
+
+                let mut openvpn_file: File = File::create(openvpn_path_str).expect("Unable to create the openvpn auth file");
+                openvpn_file.write_all(format!("{}\n{}", device_token, device_secret).as_bytes()).expect("Unable to write to the openvpn auth file");
+
             },
             None => println!("Unable to convert your home dir to str!"),
         },
