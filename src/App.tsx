@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/tauri'
 
 import LoginScreen from "./Screens/LoginScreen";
-import VPNScreen from "./Screens/VpnScreen";
+import ServerScreen from "./Screens/ServerScreen";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -30,7 +30,7 @@ function App() {
 
   return (
     <>
-      {isLoggedIn ? <VPNScreen /> : <LoginScreen performLogin={performLogin} />}
+      {isLoggedIn ? <ServerScreen /> : <LoginScreen performLogin={performLogin} />}
     </>
   );
 }
